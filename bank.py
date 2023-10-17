@@ -1,6 +1,4 @@
 class Account:
-    accounts = []
-    transactionHistory = []
     loanTimes = 0
     onLoan = True
     def __init__(self, name, email, address, accountType):
@@ -9,9 +7,10 @@ class Account:
         self.address = address
         self.accountType = accountType
         self.balance = 0
-        self.totalLoan = 0
+        self.loan = 0
+        self.transactionHistory = []
         self.accNo = name+email
-        Account.accounts.append(self)
+        Bank.accounts.append(self)
 
     def deposit(self, amount):
         if amount >=0:
@@ -30,19 +29,23 @@ class Account:
             self.transactionHistory.append(f'You withdrawed {amount}')
         else:
             print(f'Withdrawal amount exceeded')
+
     def checkBalance(self):
         print(f'Your total balance is {self.balance}')
+
     def checkTransactionHistory(self):
         print(f'Your transaction history')
         for history in self.transactionHistory:
             print(f'Transaction: {history}')
+
     def takeLoan(self, loanAmount):
-        if loanAmount <= self.balance:
+        
+        # if loanAmount <= Bank.total_loan:
             if self.onLoan == True:
                 if loanAmount >=0 and self.loanTimes < 2 :
                     self.loanTimes +=1
                     self.balance +=loanAmount
-                    self.totalLoan += loanAmount
+                    self.loan += loanAmount
                     print(f'You took loan {loanAmount}')
                     self.transactionHistory.append(f'You took loan {loanAmount} ')
                 elif loanAmount < 0:
@@ -51,17 +54,18 @@ class Account:
                     print(f'You can not take loan more than 2 twice')
             else:
                 print('Loan is not available at tme moment')
-        else: 
-            print(f'Bank does not have {loanAmount} money')
+        # else: 
+        #     print(f'Bank does not have {loanAmount} money')
+
     def transferMoney(self, accNo, transferAmount):
         flag = 0
-        for i in range(0, len(self.accounts)):
-            if accNo == self.accounts[i].accNo:
+        for i in range(0, len(Bank.accounts)):
+            if accNo == Bank.accounts[i].accNo:
                 flag = 1
                 if self.balance >= transferAmount:
-                    print(f'Transtered {transferAmount} to {self.accounts[i].accNo} account number')
+                    print(f'Transtered {transferAmount} to {Bank.accounts[i].accNo} account number')
                     self.transactionHistory.append(f'You transfered {transferAmount} ')
-                    self.accounts[i].balance += transferAmount
+                    Bank.accounts[i].balance += transferAmount
                     self.balance -= transferAmount
                 else:
                     print(f'You do not have {transferAmount} balance in your account')
@@ -77,38 +81,39 @@ class CurrentAccount(Account):
         super().__init__(name, email, address, 'current')
 
 class Bank:
+    accounts = []
     total_balance = 0
-    totalLoan = 0
+    total_loan = 0
     def create_account(self, name, email, address):
         account = SavingsAccount(name, email, address)
         Bank.accounts.append(account)
     
     def delete_account(self, accNo):
         # if len(Account.accounts) > 0:
-        for i in range(0, len(Account.accounts)):
-            if accNo == Account.accounts[i-1].accNo:
-                Account.accounts.remove(Account.accounts[i-1])
+        for i in range(0, len(self.accounts)):
+            if accNo == self.accounts[i-1].accNo:
+                self.accounts.remove(self.accounts[i-1])
                 print(f'Deleted account No {accNo}')
                 return
         else:
             print("account not found")
 
     def show_users(self):
-        if len(Account.accounts) > 0:
-            for account in Account.accounts:
+        if len(self.accounts) > 0:
+            for account in self.accounts:
                 print(f'Name: {account.name} Email: {account.email} Address: {account.address} AccNo: {account.accNo}')
         else:
             print("No user found")
 
     def show_total_balance(self):
-        for account in Account.accounts:
+        for account in self.accounts:
             self.total_balance += account.balance
         print(f'Total balance: {self.total_balance}')
     
-    def total_loan(self):
-        for account in Account.accounts:
-            self.totalLoan += account.totalLoan
-        print(f'Total loan: {self.totalLoan}')
+    def show_total_loan(self):
+        for account in self.accounts:
+            self.total_loan += account.loan
+        print(f'Total loan: {self.total_loan}')
 
     def loan_offOn(self, status):
         if status == 'T':
@@ -146,7 +151,7 @@ while True:
                     print('Invalid option')
                     break
             elif choice=='2':
-                if len(Account.accounts) > 0:
+                if len(Bank.accounts) > 0:
                     accNo = input("Enter Account Number: ")
                     Bank().delete_account(accNo)
                 else:
@@ -156,7 +161,7 @@ while True:
             elif choice == '4':
                 Bank().show_total_balance()
             elif choice == '5':
-                Bank().total_loan()
+                Bank().show_total_loan()
             elif choice == '6':
                 status = input('Loan option off and on (F / T)')
                 if status == 'T' or status == 'F':
@@ -235,4 +240,3 @@ while True:
             else:
                 print('Invalid option')
                 break
-                #OK
